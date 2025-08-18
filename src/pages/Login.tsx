@@ -69,15 +69,7 @@ export const Login: React.FC = () => {
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
             Faça login na sua conta
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Ou{' '}
-            <Link
-              to="/register"
-              className="font-medium text-blue-600 hover:text-blue-500"
-            >
-              crie uma nova conta
-            </Link>
-          </p>
+
         </div>
 
         {/* Form */}
@@ -132,33 +124,9 @@ export const Login: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Credenciais de Teste */}
-        <Card className="bg-blue-50 border-blue-200">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-blue-800 text-lg flex items-center gap-2">
-              🧪 Credenciais de Teste
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <div className="space-y-3">
-              <div className="bg-white p-3 rounded-lg border border-blue-200">
-                <p className="text-sm font-medium text-gray-700 mb-1">Email:</p>
-                <p className="text-blue-600 font-mono text-sm bg-blue-50 px-2 py-1 rounded">
-                  teste@exemplo.com
-                </p>
-              </div>
-              <div className="bg-white p-3 rounded-lg border border-blue-200">
-                <p className="text-sm font-medium text-gray-700 mb-1">Senha:</p>
-                <p className="text-blue-600 font-mono text-sm bg-blue-50 px-2 py-1 rounded">
-                  teste123
-                </p>
-              </div>
-              <div className="text-xs text-gray-600 mt-2">
-                💡 <strong>Dica:</strong> Use essas credenciais para testar o sistema sem precisar criar uma conta.
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+
+
+
       </div>
     </div>
   );

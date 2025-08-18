@@ -1,0 +1,42 @@
+node_modules
+build
+.git
+.trae
+.log
+
+# Development files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database
+dev.db
+*.db
+
+# Test files
+*.test.js
+*.test.ts
+__tests__/
+
+# Documentation
+plan.md
+CLAUDE.md
+Agentes/
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+sistema_planilha.zip
+create_test_excel.js
+test_upload.xlsx
+test_upload_real.xlsx

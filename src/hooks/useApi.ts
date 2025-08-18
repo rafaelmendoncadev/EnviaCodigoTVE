@@ -26,6 +26,7 @@ interface UseApiReturn {
     
     // Upload
     uploadFile: (file: File) => Promise<{ session: UploadSession; codes: Code[] }>;
+    getAvailableCodes: () => Promise<{ codes: Code[]; session: UploadSession | null }>;
     getSessionCodes: (sessionId: string, page?: number, limit?: number, status?: 'available' | 'sent' | 'archived') => Promise<PaginatedResponse<Code>>;
     getSessionDetails: (sessionId: string) => Promise<{ session: UploadSession; summary: any }>;
     
@@ -38,12 +39,15 @@ interface UseApiReturn {
     archiveCodes: (codeIds: string[]) => Promise<ApiResponse>;
     unarchiveCodes: (codeIds: string[]) => Promise<ApiResponse>;
     updateCodesStatus: (codeIds: string[], status: 'available' | 'sent' | 'archived') => Promise<ApiResponse>;
+    getArchivedCodes: (page?: number, limit?: number) => Promise<{ codes: Code[]; total: number }>;
+    restoreCodes: (codeIds: string[]) => Promise<ApiResponse>;
     
     // Settings
     getWhatsAppConfig: () => Promise<{ phone_number_id?: string; webhook_url?: string; is_active?: boolean; has_token?: boolean }>;
     saveWhatsAppConfig: (config: WhatsAppConfig) => Promise<ApiResponse>;
+    saveEmailConfig: (config: EmailConfig) => Promise<ApiResponse>;
     testWhatsAppConnection: () => Promise<{ success: boolean; message?: string }>;
-    testEmailConnection: () => Promise<{ success: boolean; message?: string }>;
+    testEmailConnection: (config: EmailConfig) => Promise<{ success: boolean; message?: string }>;
     
     // History & Statistics
     getHistory: (page?: number, limit?: number) => Promise<HistoryResponse>;
@@ -152,8 +156,11 @@ export const useApi = (): UseApiReturn => {
     uploadFile: (file: File) => {
       const formData = new FormData();
       formData.append('file', file);
-      return makeFormDataRequest<{ session: UploadSession; codes: Code[] }>('/upload', formData);
+      return makeFormDataRequest<{ session: UploadSession; codes: Code[] }>('/upload/excel', formData);
     },
+
+    getAvailableCodes: () => 
+      makeRequest<{ codes: Code[]; session: UploadSession | null }>('/codes/available'),
 
     getSessionCodes: (sessionId: string, page = 1, limit = 50, status?: 'available' | 'sent' | 'archived') => {
       const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
@@ -185,9 +192,9 @@ export const useApi = (): UseApiReturn => {
 
     // Archive
     archiveCodes: (codeIds: string[]) => 
-      makeRequest<ApiResponse>('/codes/archive', {
+      makeRequest<ApiResponse>('/archive/codes', {
         method: 'POST',
-        body: JSON.stringify({ code_ids: codeIds }),
+        body: JSON.stringify({ codeIds }),
       }),
 
     unarchiveCodes: (codeIds: string[]) => 
@@ -199,7 +206,7 @@ export const useApi = (): UseApiReturn => {
     updateCodesStatus: (codeIds: string[], status: 'available' | 'sent' | 'archived') => 
       makeRequest<ApiResponse>('/codes/status', {
         method: 'PATCH',
-        body: JSON.stringify({ code_ids: codeIds, status }),
+        body: JSON.stringify({ codeIds, status }),
       }),
 
     // Settings
@@ -212,14 +219,21 @@ export const useApi = (): UseApiReturn => {
         body: JSON.stringify(config),
       }),
 
+    saveEmailConfig: (config: EmailConfig) => 
+      makeRequest<ApiResponse>('/settings/email', {
+        method: 'POST',
+        body: JSON.stringify(config),
+      }),
+
     testWhatsAppConnection: () => 
       makeRequest<{ success: boolean; message?: string }>('/settings/test/whatsapp', {
         method: 'POST',
       }),
 
-    testEmailConnection: () => 
+    testEmailConnection: (config: EmailConfig) => 
       makeRequest<{ success: boolean; message?: string }>('/settings/test/email', {
         method: 'POST',
+        body: JSON.stringify(config),
       }),
 
     // History & Statistics
@@ -230,6 +244,17 @@ export const useApi = (): UseApiReturn => {
 
     getStatistics: () => 
       makeRequest<Statistics>('/history/statistics'),
+
+    getArchivedCodes: (page = 1, limit = 50) => {
+      const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+      return makeRequest<{ codes: Code[]; total: number }>(`/archive/codes?${params}`);
+    },
+
+    restoreCodes: (codeIds: string[]) => 
+      makeRequest<ApiResponse>('/codes/status', {
+        method: 'PATCH',
+        body: JSON.stringify({ codeIds, status: 'available' }),
+      }),
   };
 
   return {

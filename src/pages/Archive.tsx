@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Archive as ArchiveIcon, RotateCcw, Calendar, TrendingUp, FileText, Search } from 'lucide-react';
+import { Archive as ArchiveIcon, RotateCcw, Calendar, TrendingUp, FileText, Search, Copy } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
@@ -29,10 +29,11 @@ const Archive: React.FC = () => {
   const loadArchivedCodes = async () => {
     try {
       const response = await apiClient.getArchivedCodes(currentPage, codesPerPage);
-      setArchivedCodes(response.codes);
-      setTotalPages(Math.ceil(response.total / codesPerPage));
+      setArchivedCodes(response.codes || []);
+      setTotalPages(Math.ceil((response.total || 0) / codesPerPage));
     } catch (error) {
       toast.error('Falha ao carregar códigos arquivados');
+      setArchivedCodes([]);
     }
   };
 
@@ -56,10 +57,11 @@ const Archive: React.FC = () => {
   };
 
   const handleSelectAll = () => {
-    if (selectedCodes.size === filteredCodes.length) {
+    const codes = filteredCodes || [];
+    if (selectedCodes.size === codes.length) {
       setSelectedCodes(new Set());
     } else {
-      setSelectedCodes(new Set(filteredCodes.map(code => code.id)));
+      setSelectedCodes(new Set(codes.map(code => code.id)));
     }
   };
 
@@ -89,8 +91,56 @@ const Archive: React.FC = () => {
     }
   };
 
-  const filteredCodes = archivedCodes.filter(code => 
-    code.combined_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const handleCopyAllCodes = async () => {
+    try {
+      const codes = archivedCodes || [];
+      if (codes.length === 0) {
+        toast.error('Nenhum código disponível para copiar');
+        return;
+      }
+
+      // Format all archived codes for copying
+      const codesText = codes.map(code => {
+        const columnA = code.column_a_value || '';
+        const columnD = code.column_d_value || '';
+        return `${columnA}\t${columnD}`;
+      }).join('\n');
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(codesText);
+      toast.success(`${codes.length} códigos arquivados copiados!`);
+    } catch (error) {
+      console.error('Erro ao copiar códigos:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro desconhecido ao copiar dados');
+    }
+  };
+
+  const handleCopySelectedCodes = async () => {
+    try {
+      if (selectedCodes.size === 0) {
+        toast.error('Selecione pelo menos um código para copiar');
+        return;
+      }
+
+      // Filter selected codes and format for copying
+      const selectedCodesArray = (archivedCodes || []).filter(code => selectedCodes.has(code.id));
+      const codesText = selectedCodesArray.map(code => {
+        const columnA = code.column_a_value || '';
+        const columnD = code.column_d_value || '';
+        return `${columnA}\t${columnD}`;
+      }).join('\n');
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(codesText);
+      toast.success(`${selectedCodesArray.length} códigos selecionados copiados!`);
+    } catch (error) {
+      console.error('Erro ao copiar códigos selecionados:', error);
+      toast.error(error instanceof Error ? error.message : 'Erro desconhecido ao copiar dados');
+    }
+  };
+
+  const filteredCodes = (archivedCodes || []).filter(code => 
+    code.combined_code?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (code.column_a_value && code.column_a_value.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -111,67 +161,65 @@ const Archive: React.FC = () => {
       </div>
 
       {/* Statistics Cards */}
-      {statistics && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total de Sessões</p>
-                  <p className="text-2xl font-bold text-gray-900">{statistics.total_sessions}</p>
-                </div>
-                <FileText className="h-8 w-8 text-blue-600" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total de Sessões</p>
+                <p className="text-2xl font-bold text-gray-900">{statistics?.total_sessions || 0}</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Códigos Processados</p>
-                  <p className="text-2xl font-bold text-gray-900">{statistics.total_codes}</p>
-                </div>
-                <TrendingUp className="h-8 w-8 text-green-600" />
+              <FileText className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Códigos Processados</p>
+                <p className="text-2xl font-bold text-gray-900">{statistics?.total_codes || 0}</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Códigos Enviados</p>
-                  <p className="text-2xl font-bold text-gray-900">{statistics.total_sent}</p>
-                </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
+              <TrendingUp className="h-8 w-8 text-green-600" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Códigos Enviados</p>
+                <p className="text-2xl font-bold text-gray-900">{statistics?.total_sent || 0}</p>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Códigos Arquivados</p>
-                  <p className="text-2xl font-bold text-gray-900">{statistics.total_archived}</p>
-                </div>
-                <ArchiveIcon className="h-8 w-8 text-gray-600" />
+              <Calendar className="h-8 w-8 text-blue-600" />
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Códigos Arquivados</p>
+                <p className="text-2xl font-bold text-gray-900">{statistics?.total_archived || 0}</p>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+              <ArchiveIcon className="h-8 w-8 text-gray-600" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Recent Activity Chart */}
-      {statistics && statistics.recent_activity.length > 0 && (
+      {(statistics?.recent_activity || []).length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>Atividade Recente (Últimos 7 dias)</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {statistics.recent_activity.map((activity, index) => (
+              {statistics?.recent_activity.map((activity, index) => (
                 <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
                     <Calendar className="h-4 w-4 text-gray-600" />
@@ -200,23 +248,44 @@ const Archive: React.FC = () => {
               Códigos Arquivados
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button
+                onClick={handleCopyAllCodes}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
+                disabled={archivedCodes.length === 0}
+              >
+                <Copy className="h-4 w-4" />
+                Copiar Todos
+              </Button>
               {selectedCodes.size > 0 && (
-                <Button
-                  onClick={() => setShowRestoreModal(true)}
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Restaurar ({selectedCodes.size})
-                </Button>
+                <>
+                  <Button
+                    onClick={handleCopySelectedCodes}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copiar Selecionados ({selectedCodes.size})
+                  </Button>
+                  <Button
+                    onClick={() => setShowRestoreModal(true)}
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Restaurar ({selectedCodes.size})
+                  </Button>
+                </>
               )}
               <Button
                 onClick={handleSelectAll}
                 variant="outline"
                 size="sm"
-                disabled={filteredCodes.length === 0}
+                disabled={(filteredCodes || []).length === 0}
               >
-                {selectedCodes.size === filteredCodes.length ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                {selectedCodes.size === (filteredCodes || []).length ? 'Desmarcar Todos' : 'Selecionar Todos'}
               </Button>
             </div>
           </div>
@@ -238,7 +307,7 @@ const Archive: React.FC = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
               <p className="text-gray-600 mt-2">Carregando códigos...</p>
             </div>
-          ) : filteredCodes.length === 0 ? (
+          ) : (filteredCodes || []).length === 0 ? (
             <div className="text-center py-8">
               <ArchiveIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <p className="text-gray-600">
@@ -248,7 +317,7 @@ const Archive: React.FC = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
-                {filteredCodes.map((code) => (
+                {(filteredCodes || []).map((code) => (
                   <div
                     key={code.id}
                     className={`p-3 border rounded-lg cursor-pointer transition-all ${

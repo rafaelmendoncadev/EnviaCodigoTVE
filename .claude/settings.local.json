@@ -7,7 +7,8 @@
       "Bash(npx kill-port:*)",
       "Bash(curl:*)",
       "Bash(sqlite3:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

@@ -31,7 +31,7 @@ const Settings: React.FC = () => {
   const [testingEmail, setTestingEmail] = useState(false);
   const [whatsappStatus, setWhatsappStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [activeTab, setActiveTab] = useState<'whatsapp' | 'tutorials'>('whatsapp');
+  const [activeTab, setActiveTab] = useState<'whatsapp' | 'email' | 'tutorials'>('whatsapp');
 
   const { apiClient, loading } = useApi();
 
@@ -160,6 +160,16 @@ const Settings: React.FC = () => {
             }`}
           >
             WhatsApp Business
+          </button>
+          <button
+            onClick={() => setActiveTab('email')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'email'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Email
           </button>
           <button
             onClick={() => setActiveTab('tutorials')}

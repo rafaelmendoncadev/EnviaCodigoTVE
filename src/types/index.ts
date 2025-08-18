@@ -18,6 +18,8 @@ export interface Code {
   sent_at: string | null;
   archived_at: string | null;
   created_at: string;
+  filename?: string; // Nome da planilha de origem
+  session_created_at?: string; // Data de criação da sessão
 }
 
 export interface UploadSession {
@@ -93,12 +95,20 @@ export interface Statistics {
   whatsapp_sent: number;
   email_sent: number;
   archived_codes: number;
+  total_sessions: number;
+  total_codes: number;
+  total_sent: number;
+  total_archived: number;
   recent_activity: {
     id: string;
     action_type: string;
     destination?: string;
     status: string;
     created_at: string;
+    date: string;
+    sessions: number;
+    codes_processed: number;
+    codes_sent: number;
   }[];
 }
 
@@ -125,13 +135,11 @@ export interface HistoryResponse {
 
 export interface PaginatedResponse<T> {
   success: boolean;
-  data: {
-    [key: string]: T[];
-    pagination: {
-      page: number;
-      limit: number;
-      total: number;
-      totalPages: number;
-    };
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
   };
 }

@@ -68,7 +68,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Erro ao fazer parse do JSON:', jsonError);
+        return { success: false, message: 'Erro de comunicação com o servidor. Tente novamente.' };
+      }
 
       if (response.ok && data.success) {
         const { token: authToken, user: userData } = data;
@@ -104,7 +110,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ name, email, password }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Erro ao fazer parse do JSON no registro:', jsonError);
+        return { success: false, message: 'Erro de comunicação com o servidor. Tente novamente.' };
+      }
 
       if (response.ok && data.success) {
         const { token: authToken, user: userData } = data;

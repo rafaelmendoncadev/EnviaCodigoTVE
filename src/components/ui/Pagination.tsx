@@ -77,7 +77,7 @@ export const Pagination: React.FC<PaginationProps> = ({
                   <span className="px-3 py-2 text-gray-500">...</span>
                 ) : (
                   <Button
-                    variant={currentPage === page ? 'default' : 'outline'}
+                    variant={currentPage === page ? 'primary' : 'outline'}
                     size="sm"
                     onClick={() => onPageChange(page as number)}
                     disabled={loading}

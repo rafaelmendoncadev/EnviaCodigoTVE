@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from './ui/Toast';
 import { Button } from './ui/Button';
-import { Home, Settings, Archive, LogOut, Upload, Clock } from 'lucide-react';
+import { Home, Settings, Archive, LogOut, Upload, Clock, Ticket } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const Layout: React.FC = () => {
@@ -49,34 +49,49 @@ export const Layout: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="w-full px-2 sm:px-4 lg:px-6">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">EC</span>
+            {/* justify-between: Logo no extremo esquerdo, Menu no extremo direito */}
+            {/* Logo - Positioned at far left using justify-between */}
+            <div className="flex items-center flex-shrink-0">
+              <Link 
+                to="/" 
+                className="flex items-center space-x-2 hover:opacity-80 transition-opacity duration-200 group"
+              >
+                <div className="relative">
+                  {/* Logo container with gradient background */}
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow duration-200">
+                    <Ticket className="h-6 w-6 text-white" />
+                  </div>
+                  {/* Subtle glow effect */}
+                  <div className="absolute inset-0 w-10 h-10 bg-blue-600 rounded-xl blur-lg opacity-20 -z-10 group-hover:opacity-30 transition-opacity duration-200"></div>
                 </div>
-                <span className="text-xl font-semibold text-gray-900">
-                  EnviaCódigo
-                </span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xl font-bold text-gray-900 leading-tight truncate">
+                    EnviaCódigo
+                  </span>
+                  <span className="text-xs text-blue-600 font-medium -mt-1 hidden sm:block">
+                    Gestão de Códigos
+                  </span>
+                </div>
               </Link>
             </div>
 
-            {/* User Menu */}
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
+            {/* User Menu - Positioned at far right using justify-between */}
+            <div className="flex items-center space-x-3 flex-shrink-0">
+              <span className="text-sm text-gray-600 hidden sm:inline-block">
                 Olá, {user?.name || user?.email}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors duration-200"
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Sair
+                <span className="hidden sm:inline">Sair</span>
+                <span className="sm:hidden">Logout</span>
               </Button>
             </div>
           </div>

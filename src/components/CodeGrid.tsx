@@ -183,7 +183,14 @@ const CodeGrid: React.FC<CodeGridProps> = ({
                   </div>
                 )}
                 
-                <div className="text-xs text-gray-500">
+                <div className="text-xs text-gray-500 space-y-1">
+                  {/* Informação da planilha de origem */}
+                  {code.filename && (
+                    <div className="text-xs text-blue-600 font-medium truncate" title={code.filename}>
+                      📄 {code.filename}
+                    </div>
+                  )}
+                  
                   {code.status === 'sent' && code.sent_at && (
                     <div>Enviado: {formatDate(code.sent_at)}</div>
                   )}
