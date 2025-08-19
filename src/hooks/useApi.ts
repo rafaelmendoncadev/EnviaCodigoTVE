@@ -82,13 +82,30 @@ export const useApi = (): UseApiReturn => {
       });
 
       if (response.status === 401) {
-        logout();
+        // Verificar se já estamos tentando fazer logout para evitar loops
+        if (!endpoint.includes('/auth/')) {
+          console.warn('Token inválido detectado, fazendo logout...');
+          logout();
+        }
         throw new Error('Sessão expirada. Faça login novamente.');
+      }
+
+      if (response.status === 403) {
+        throw new Error('Acesso negado. Verifique suas permissões.');
       }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`);
+        const errorMessage = errorData.message || `Erro ${response.status}: ${response.statusText}`;
+        
+        // Log específico para diferentes tipos de erro
+        if (response.status >= 500) {
+          console.error('Erro do servidor:', errorMessage);
+        } else if (response.status >= 400) {
+          console.warn('Erro do cliente:', errorMessage);
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return await response.json();
@@ -120,13 +137,30 @@ export const useApi = (): UseApiReturn => {
       });
 
       if (response.status === 401) {
-        logout();
+        // Verificar se já estamos tentando fazer logout para evitar loops
+        if (!endpoint.includes('/auth/')) {
+          console.warn('Token inválido detectado, fazendo logout...');
+          logout();
+        }
         throw new Error('Sessão expirada. Faça login novamente.');
+      }
+
+      if (response.status === 403) {
+        throw new Error('Acesso negado. Verifique suas permissões.');
       }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro ${response.status}: ${response.statusText}`);
+        const errorMessage = errorData.message || `Erro ${response.status}: ${response.statusText}`;
+        
+        // Log específico para diferentes tipos de erro
+        if (response.status >= 500) {
+          console.error('Erro do servidor:', errorMessage);
+        } else if (response.status >= 400) {
+          console.warn('Erro do cliente:', errorMessage);
+        }
+        
+        throw new Error(errorMessage);
       }
 
       return await response.json();

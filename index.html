@@ -14,6 +14,18 @@
         });
       }
     </script>
+    <!-- React DevTools para desenvolvimento -->
+    <script>
+      if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+        const script = document.createElement('script');
+        script.src = 'http://localhost:8097';
+        script.async = true;
+        script.onerror = () => {
+          console.log('React DevTools não está disponível. Para instalar: npm install -g react-devtools');
+        };
+        document.head.appendChild(script);
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

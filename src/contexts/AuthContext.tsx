@@ -36,24 +36,59 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Verificar token salvo no localStorage ao inicializar
+  // Verificar e validar token salvo no localStorage ao inicializar
   useEffect(() => {
-    const savedToken = localStorage.getItem('auth_token');
-    const savedUser = localStorage.getItem('auth_user');
-    
-    if (savedToken && savedUser) {
-      try {
-        setToken(savedToken);
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Erro ao carregar dados salvos:', error);
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('auth_user');
+    const validateToken = async () => {
+      const savedToken = localStorage.getItem('auth_token');
+      const savedUser = localStorage.getItem('auth_user');
+      
+      if (savedToken && savedUser) {
+        try {
+          // Verificar se o token não está expirado
+          const tokenPayload = JSON.parse(atob(savedToken.split('.')[1]));
+          const currentTime = Date.now() / 1000;
+          
+          if (tokenPayload.exp && tokenPayload.exp < currentTime) {
+            // Token expirado
+            console.log('Token expirado, removendo dados salvos');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('auth_user');
+          } else {
+            // Token válido, verificar com o servidor
+            try {
+              const response = await fetch('/api/health', {
+                headers: {
+                  'Authorization': `Bearer ${savedToken}`
+                }
+              });
+              
+              if (response.ok) {
+                setToken(savedToken);
+                setUser(JSON.parse(savedUser));
+              } else {
+                // Token inválido no servidor
+                localStorage.removeItem('auth_token');
+                localStorage.removeItem('auth_user');
+              }
+            } catch (error) {
+              // Erro de rede, manter token localmente mas avisar
+              console.warn('Erro ao validar token com servidor:', error);
+              setToken(savedToken);
+              setUser(JSON.parse(savedUser));
+            }
+          }
+        } catch (error) {
+          console.error('Erro ao validar token salvo:', error);
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
+        }
       }
-    }
+      
+      setLoading(false);
+      setIsLoading(false);
+    };
     
-    setLoading(false);
-    setIsLoading(false);
+    validateToken();
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; message: string }> => {
